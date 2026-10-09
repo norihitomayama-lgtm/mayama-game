@@ -39,7 +39,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
 .overlay.hidden{display:none}
 .overlay h2{font-size:clamp(20px,4.5dvh,30px);margin:0 0 6px}
 .overlay p{font-size:clamp(10px,1.65dvh,12px);color:#c0c7d1;margin:0 0 14px;line-height:1.55;max-width:280px}.overlay .result-stats{font-size:clamp(12px,2dvh,15px);line-height:1.8;font-weight:800;color:#f8f9fb}
-.overlay button{height:38px;padding:0 18px;font-size:12px;background:#ffd43b;color:#111;flex:0 0 auto}.overlay .secondary{background:#343b47;color:#fff}.rank-form{display:none;width:100%;max-width:260px;gap:6px;margin:0 0 8px}.rank-form.show{display:flex;flex-direction:column}.rank-form input{width:100%;height:34px;border:1px solid #505967;border-radius:6px;background:#151922;color:#fff;padding:0 9px;font-size:13px}.rank-form button{width:100%}.rank-status{font-size:10px;color:#c0c7d1;min-height:14px}.leaderboard{width:100%;max-width:280px;text-align:left;margin:8px 0;font-size:10px}.leaderboard h3{margin:4px 0 6px;text-align:center;color:#ffd43b;font-size:12px;letter-spacing:.1em}.leader-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:5px;padding:4px 2px;border-bottom:1px solid #303744}.leader-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.leader-score{font-weight:900;color:#ffd43b}.rank-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.overlay button{height:38px;padding:0 18px;font-size:12px;background:#ffd43b;color:#111;flex:0 0 auto}.overlay .secondary{background:#343b47;color:#fff}.rank-form{display:none;width:100%;max-width:260px;gap:6px;margin:0 0 8px}.rank-form.show{display:flex;flex-direction:column}.rank-form input{width:100%;height:34px;border:1px solid #505967;border-radius:6px;background:#151922;color:#fff;padding:0 9px;font-size:13px}.rank-form button{width:100%}.rank-status{font-size:10px;color:#c0c7d1;min-height:14px}.personal-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0 8px}.personal-stat{background:#0c1016;border:1px solid #303846;border-radius:8px;padding:8px;text-align:center}.personal-stat-label{font-size:8px;letter-spacing:.1em;color:#8993a1}.personal-stat-value{font-size:15px;font-weight:950;color:#ffd43b;margin-top:3px;font-variant-numeric:tabular-nums}.leaderboard{width:100%;max-width:310px;text-align:left;margin:10px 0 4px;padding:10px;background:linear-gradient(160deg,#171d27,#10141b);border:1px solid #343d4b;border-radius:12px;font-size:11px;box-shadow:0 8px 24px #0005}.leaderboard h3{margin:0;text-align:center;color:#ffd43b;font-size:13px;letter-spacing:.16em;font-weight:950}.leader-subtitle{text-align:center;color:#7f8998;font-size:8px;letter-spacing:.12em;margin:3px 0 10px}.leader-columns{display:grid;grid-template-columns:32px minmax(0,1fr) 76px;gap:7px;padding:0 7px 5px;color:#7f8998;font-size:8px;letter-spacing:.1em;border-bottom:1px solid #343d4b}.leader-columns span:last-child{text-align:right}.leader-row{display:grid;grid-template-columns:32px minmax(0,1fr) 76px;align-items:center;gap:7px;padding:7px;border-bottom:1px solid #282f3a;border-radius:5px;min-height:31px}.leader-row:last-child{border-bottom:0}.leader-row.my-rank-row{outline:1px solid #ffd43b66;background:#ffd43b0d}.leader-row.top-rank{background:linear-gradient(90deg,#ffd43b12,transparent 80%)}.leader-rank{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#252d39;color:#b8c0cb;font-size:10px;font-weight:900}.leader-row.rank-1 .leader-rank{background:#ffd43b;color:#151515}.leader-row.rank-2 .leader-rank{background:#c8d0db;color:#15191f}.leader-row.rank-3 .leader-rank{background:#c98551;color:#17100b}.leader-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:750;color:#f1f3f6}.leader-score{font-size:12px;text-align:right;font-weight:950;color:#ffd43b;font-variant-numeric:tabular-nums}.leader-empty,.leader-error{padding:12px 4px;text-align:center;color:#aeb7c4;line-height:1.5}.rank-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .pause-cover{position:absolute;inset:3px;background:#090b10f2;z-index:8;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-weight:950;font-size:26px;border-radius:6px}.pause-actions{display:flex;flex-direction:column;gap:9px;width:min(82%,230px)}.pause-actions button{height:42px;font-size:14px}.pause-actions .resume{background:#ffd43b;color:#111}.pause-actions .return{background:#343b47;color:#fff}
 .pause-cover.show{display:flex}
 @media(max-height:500px){
@@ -103,6 +103,15 @@ let mayamaCount=0,maxChain=0;
 const SUPABASE_URL="https://yifwxuznctajopwcnlge.supabase.co";
 const SUPABASE_KEY="sb_publishable_vsGxHWY15qN5AWnINc-zVA_dRpjC6WD";
 let scoreSubmitted=false;
+const PLAYER_ID_KEY="mayama-player-id-v1";
+function getPlayerId(){
+ try{
+  let id=localStorage.getItem(PLAYER_ID_KEY);
+  if(!id){id=(crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16)}));localStorage.setItem(PLAYER_ID_KEY,id)}
+  return id;
+ }catch(e){return ""}
+}
+const playerId=getPlayerId();
 
 function randLetter(){
  const n=Math.random();
@@ -240,33 +249,49 @@ function endGame(){
  document.getElementById("rankStatus").textContent="";
  document.getElementById("submitScoreBtn").disabled=false;
  document.getElementById("submitScoreBtn").textContent="SUBMIT SCORE";
- document.getElementById("leaderboard").hidden=false;
- loadLeaderboard();
+ // Keep the leaderboard collapsed initially so the score submission form
+ // remains visible on short screens. Players can open it with GLOBAL RANKING.
+ document.getElementById("leaderboard").hidden=true;
  render();
 }
 async function loadLeaderboard(){
  const box=document.getElementById("leaderboard");
  box.hidden=false;box.replaceChildren();
- const heading=document.createElement("h3");heading.textContent="GLOBAL TOP 10";box.appendChild(heading);
- const loading=document.createElement("div");loading.textContent="Loading ranking…";loading.style.textAlign="center";box.appendChild(loading);
+ const heading=document.createElement("h3");heading.textContent="GLOBAL LEADERBOARD";box.appendChild(heading);
+ const subtitle=document.createElement("div");subtitle.className="leader-subtitle";subtitle.textContent="BEST SCORE PER PLAYER · TOP 10";box.appendChild(subtitle);
+ const stats=document.createElement("div");stats.className="personal-stats";
+ stats.innerHTML='<div class="personal-stat"><div class="personal-stat-label">YOUR BEST</div><div class="personal-stat-value" id="myBest">—</div></div><div class="personal-stat"><div class="personal-stat-label">YOUR RANK</div><div class="personal-stat-value" id="myRank">—</div></div>';
+ box.appendChild(stats);
+ const loading=document.createElement("div");loading.className="leader-empty";loading.textContent="Loading leaderboard…";box.appendChild(loading);
  try{
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/scores?select=nickname,score&order=score.desc,created_at.asc&limit=10`,{headers:{apikey:SUPABASE_KEY}});
-  if(!response.ok)throw new Error(`HTTP ${response.status}`);
-  const rows=await response.json();box.replaceChildren(heading);
-  if(!rows.length){const empty=document.createElement("div");empty.textContent="No scores yet. Be the first!";empty.style.textAlign="center";box.appendChild(empty);return}
-  rows.forEach((row,i)=>{const line=document.createElement("div");line.className="leader-row";const rank=document.createElement("span");rank.textContent=`${i+1}.`;const name=document.createElement("span");name.className="leader-name";name.textContent=row.nickname;const points=document.createElement("span");points.className="leader-score";points.textContent=Number(row.score).toLocaleString();line.append(rank,name,points);box.appendChild(line)});
- }catch(err){box.replaceChildren(heading);const msg=document.createElement("div");msg.textContent="Could not load ranking. Check your Supabase table and policies.";msg.style.textAlign="center";box.appendChild(msg)}
+  const headers={apikey:SUPABASE_KEY,"Content-Type":"application/json"};
+  const [rankResponse,statsResponse]=await Promise.all([
+   fetch(`${SUPABASE_URL}/rest/v1/rpc/get_leaderboard`,{method:"POST",headers,body:"{}"}),
+   fetch(`${SUPABASE_URL}/rest/v1/rpc/get_player_stats`,{method:"POST",headers,body:JSON.stringify({p_player_id:playerId})})
+  ]);
+  if(!rankResponse.ok)throw new Error(`Leaderboard HTTP ${rankResponse.status}`);
+  if(!statsResponse.ok)throw new Error(`Stats HTTP ${statsResponse.status}`);
+  const rows=await rankResponse.json();const personal=await statsResponse.json();
+  const bestEl=stats.querySelector("#myBest"),rankEl=stats.querySelector("#myRank");
+  if(personal&&personal.best_score!==null&&personal.best_score!==undefined){bestEl.textContent=Number(personal.best_score).toLocaleString();rankEl.textContent=personal.rank?`#${personal.rank}`:"—"}
+  else {bestEl.textContent="—";rankEl.textContent="Not ranked"}
+  box.replaceChildren(heading,subtitle,stats);
+  if(!rows.length){const empty=document.createElement("div");empty.className="leader-empty";empty.textContent="No scores yet. Be the first to claim the top spot!";box.appendChild(empty);return}
+  const columns=document.createElement("div");columns.className="leader-columns";columns.innerHTML="<span>RANK</span><span>PLAYER</span><span>SCORE</span>";box.appendChild(columns);
+  rows.forEach(row=>{const rank=Number(row.rank);const line=document.createElement("div");line.className=`leader-row${rank<=3?` top-rank rank-${rank}`:""}${row.player_id===playerId?" my-rank-row":""}`;const rankEl=document.createElement("span");rankEl.className="leader-rank";rankEl.textContent=String(rank).padStart(2,"0");const name=document.createElement("span");name.className="leader-name";name.textContent=row.nickname+(row.player_id===playerId?" (YOU)":"");const points=document.createElement("span");points.className="leader-score";points.textContent=Number(row.score).toLocaleString();line.append(rankEl,name,points);box.appendChild(line)});
+ }catch(err){box.replaceChildren(heading,subtitle);const msg=document.createElement("div");msg.className="leader-error";msg.textContent="Could not load leaderboard. Please apply the included Supabase SQL setup, then refresh.";box.appendChild(msg)}
 }
 async function submitScore(){
  if(scoreSubmitted)return;
  const input=document.getElementById("nicknameInput");const nickname=input.value.trim();const status=document.getElementById("rankStatus");
  if(!nickname||nickname.length>16){status.textContent="Enter a nickname (1–16 characters).";return}
+ if(!playerId){status.textContent="Could not create a player ID in this browser.";return}
  const button=document.getElementById("submitScoreBtn");button.disabled=true;button.textContent="SUBMITTING…";status.textContent="";
  try{
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/scores`,{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({nickname,score,mayama_clears:mayamaCount,max_chain:maxChain})});
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_score`,{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_nickname:nickname,p_score:score,p_mayama_clears:mayamaCount,p_max_chain:maxChain,p_player_id:playerId})});
   if(!response.ok){const detail=await response.text();throw new Error(detail||`HTTP ${response.status}`)}
   scoreSubmitted=true;status.textContent="Score submitted!";button.textContent="SUBMITTED";await loadLeaderboard();
- }catch(err){status.textContent="Submission failed. Check table permissions and try again.";button.disabled=false;button.textContent="TRY AGAIN"}
+ }catch(err){status.textContent=err.message&&err.message.includes("15 seconds")?"Please wait a few seconds before submitting again.":"Submission failed. Apply the included Supabase SQL setup and try again.";button.disabled=false;button.textContent="TRY AGAIN"}
 }
 document.getElementById("submitScoreBtn").addEventListener("click",submitScore);
 document.getElementById("rankingBtn").addEventListener("click",()=>{const box=document.getElementById("leaderboard");box.hidden=!box.hidden;if(!box.hidden)loadLeaderboard()});

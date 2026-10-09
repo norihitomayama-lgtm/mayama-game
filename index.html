@@ -28,14 +28,14 @@ small{display:block;color:#858e9b;font-size:7px;letter-spacing:.12em}.score{font
 button{border:0;border-radius:8px;background:#272e38;color:#fff;height:clamp(32px,6.1dvh,47px);font-size:clamp(17px,3.4dvh,23px);font-weight:900;touch-action:manipulation}
 button:active{background:#3b4451;transform:scale(.97)}
 button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
-.bottom-row{display:flex;gap:6px;justify-content:center;flex:0 0 auto}
+.bottom-row{display:flex;gap:6px;justify-content:center;flex:0 0 auto;width:min(92vw,400px)}
 .help{font-size:7px;color:#68717e;line-height:1;flex:0 0 auto}
 .overlay{position:absolute;inset:3px;border-radius:6px;background:#090b10ed;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:12px}
 .overlay.hidden{display:none}
 .overlay h2{font-size:clamp(20px,4.5dvh,30px);margin:0 0 6px}
 .overlay p{font-size:11px;color:#aab1bc;margin:0 0 14px;line-height:1.5}
 .overlay button{height:42px;padding:0 25px;font-size:14px;background:#ffd43b;color:#111}
-.pause-cover{position:absolute;inset:3px;background:#090b10d9;z-index:8;display:none;align-items:center;justify-content:center;font-weight:950;font-size:26px}
+.pause-cover{position:absolute;inset:3px;background:#090b10f2;z-index:8;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-weight:950;font-size:26px;border-radius:6px}.pause-actions{display:flex;flex-direction:column;gap:9px;width:min(82%,230px)}.pause-actions button{height:42px;font-size:14px}.pause-actions .resume{background:#ffd43b;color:#111}.pause-actions .return{background:#343b47;color:#fff}
 .pause-cover.show{display:flex}
 @media(max-height:500px){
  .subtitle,.help{display:none}
@@ -56,7 +56,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
   <div class="play-area" id="playArea">
     <div class="board" id="board">
       <div class="grid" id="grid"></div>
-      <div class="pause-cover" id="pauseCover">PAUSED</div>
+      <div class="pause-cover" id="pauseCover"><div>PAUSED</div><div class="pause-actions"><button class="resume" id="resumeBtn">ゲームに戻る</button><button class="return" id="restartBtn">タイトルに戻る</button></div></div>
       <div class="overlay" id="startOverlay">
         <h2 id="overlayTitle">MAYAMA</h2>
         <p id="overlayText">M・A・Y の2マスピースを操作して<br>「MAYAMA」をつなげよう。</p>
@@ -79,7 +79,6 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
   </div>
   <div class="bottom-row">
     <button class="utility" id="pauseBtn">一時停止</button>
-    <button class="utility" id="restartBtn">やり直す</button>
   </div>
   <div class="help">← → 移動　↻ 回転　↓ 1段落下　⤓ 即落下</div>
 </main>
@@ -175,10 +174,20 @@ async function resolveMatches(){
  document.getElementById("chain").textContent="";busy=false;
 }
 function stopTimer(){if(timer){clearInterval(timer);timer=null}}
-function startTimer(){stopTimer();timer=setInterval(softDrop,650)}
+function startTimer(){
+ stopTimer();
+  // Speed follows score: start at 700 ms per row and accelerate to 150 ms.
+ timer=setInterval(()=>{
+  if(!started||paused||gameOver||busy)return;
+   const dropDelay=Math.max(150,700-score*0.075);
+  const now=Date.now();
+  if(now-lastDropAt>=dropDelay){lastDropAt=now;softDrop()}
+ },40);
+}
 function startGame(){
  board=emptyBoard();queue=[];refillQueue();piece=queue.shift();refillQueue();
  score=0;busy=false;paused=false;gameOver=false;started=true;
+ gameStartAt=Date.now();pausedAt=0;pausedTotal=0;lastDropAt=gameStartAt;
  document.getElementById("startOverlay").classList.add("hidden");
  document.getElementById("pauseCover").classList.remove("show");
  document.getElementById("pauseBtn").textContent="一時停止";
@@ -187,6 +196,7 @@ function startGame(){
 function togglePause(){
  if(!started||gameOver)return;
  paused=!paused;
+ if(paused){pausedAt=Date.now()}else if(pausedAt){pausedTotal+=Date.now()-pausedAt;pausedAt=0;lastDropAt=Date.now()}
  document.getElementById("pauseCover").classList.toggle("show",paused);
  document.getElementById("pauseBtn").textContent=paused?"再開":"一時停止";
 }
@@ -204,9 +214,14 @@ document.querySelectorAll("[data-a]").forEach(btn=>btn.addEventListener("click",
 }));
 document.getElementById("startBtn").addEventListener("click",startGame);
 document.getElementById("pauseBtn").addEventListener("click",togglePause);
+document.getElementById("resumeBtn").addEventListener("click",togglePause);
 document.getElementById("restartBtn").addEventListener("click",()=>{
+ // Reset is intentionally tucked inside the pause screen and requires explicit confirmation.
+ const ok=window.confirm("現在のゲームを終了して、タイトルに戻りますか？\nスコアはリセットされます。");
+ if(!ok)return;
  stopTimer();started=false;paused=false;gameOver=false;
  document.getElementById("pauseCover").classList.remove("show");
+ document.getElementById("pauseBtn").textContent="一時停止";
  document.getElementById("overlayTitle").textContent="MAYAMA";
  document.getElementById("overlayText").innerHTML="M・A・Y の2マスピースを操作して<br>「MAYAMA」をつなげよう。";
  document.getElementById("startBtn").textContent="START";

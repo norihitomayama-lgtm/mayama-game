@@ -6,247 +6,222 @@
 <title>MAYAMA</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090b10;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.app{width:100%;height:100%;height:100dvh;display:flex;flex-direction:column;align-items:center;padding:6px 8px;gap:4px;overflow:hidden}
-h1{font-size:clamp(18px,4.2dvh,29px);line-height:1;margin:0;font-weight:950;letter-spacing:.18em;flex:0 0 auto}
-.desc{font-size:clamp(8px,1.7dvh,11px);line-height:1.1;color:#9ba3af;flex:0 0 auto}
-.hud{width:min(90vw,390px);display:flex;justify-content:space-between;align-items:center;background:#151922;border:1px solid #343b47;border-radius:9px;padding:4px 11px;flex:0 0 auto}
-.hud small{display:block;color:#858e9b;font-size:7px;letter-spacing:.12em;line-height:1}.score{font-size:clamp(15px,3dvh,21px);line-height:1.05;font-weight:900}.chain{color:#ffd43b;font-size:clamp(10px,2dvh,15px);font-weight:900}
-.board{position:relative;flex:0 1 auto;height:calc(100dvh - 145px);width:calc((100dvh - 145px)*8/14);max-height:68dvh;max-width:90vw;min-height:0;padding:3px;background:#06080b;border:1px solid #3a424f;border-radius:9px}
-.grid{width:100%;height:100%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(14,1fr);gap:1.5px}
-.cell{background:#292f39;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:clamp(12px,4.8dvh,25px);font-weight:950;min-width:0;min-height:0}
-.cell.falling{background:#ffd43b;color:#111;box-shadow:inset 0 0 0 2px #fff}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090b10;color:#f8f9fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{height:100%;height:100dvh;width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.65dvh,6px);padding:env(safe-area-inset-top) 8px env(safe-area-inset-bottom);overflow:hidden}
+h1{font-size:clamp(18px,3.5dvh,28px);line-height:1;margin:3px 0 0;font-weight:950;letter-spacing:.18em;flex:0 0 auto}
+.subtitle{font-size:clamp(8px,1.45dvh,11px);color:#9ba3af;flex:0 0 auto}
+.hud{width:min(92vw,400px);display:flex;justify-content:space-between;align-items:center;background:#151922;border:1px solid #343b47;border-radius:9px;padding:4px 10px;flex:0 0 auto}
+small{display:block;color:#858e9b;font-size:7px;letter-spacing:.12em}.score{font-size:clamp(15px,2.6dvh,21px);line-height:1.1;font-weight:900}.chain{color:#ffd43b;font-weight:900;font-size:clamp(10px,1.8dvh,14px)}
+.play-area{display:flex;align-items:stretch;justify-content:center;gap:6px;min-height:0;flex:1 1 auto;width:100%}
+.board{position:relative;flex:0 1 auto;min-height:0;height:100%;aspect-ratio:8/14;width:auto;max-width:calc(100% - 82px);padding:3px;background:#05070a;border:1px solid #3a424f;border-radius:9px}
+.grid{width:100%;height:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(14,minmax(0,1fr));gap:1.5px}
+.cell{min-width:0;min-height:0;background:#292f39;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:clamp(10px,3.1dvh,24px);font-weight:950;line-height:1}
+.cell.falling{background:#ffd43b;color:#101216;box-shadow:inset 0 0 0 1.5px #fff}
 .cell.flash{background:#fff;color:#111;animation:pop .18s forwards}
 @keyframes pop{to{opacity:0;transform:scale(.15)}}
-.controls{width:min(90vw,390px);display:grid;grid-template-columns:repeat(5,1fr);gap:4px;flex:0 0 auto}
-button{height:clamp(34px,6.5dvh,50px);border:0;border-radius:8px;background:#272e38;color:#fff;font-size:clamp(17px,3.8dvh,24px);font-weight:900;touch-action:manipulation}
-button:active{background:#3b4451;transform:scale(.96)}
-.help{font-size:7px;line-height:1;color:#68717e;flex:0 0 auto}
-.overlay{display:none;position:absolute;inset:3px;border-radius:6px;background:#090b10ed;z-index:10;align-items:center;justify-content:center;flex-direction:column}
-.overlay.show{display:flex}.go{font-size:clamp(20px,5dvh,30px);font-weight:950}.final{color:#ffd43b;font-weight:900;margin:6px 0 12px}.restart{width:auto;padding:0 20px;font-size:12px}
-@media(max-height:520px){
- .app{padding:3px 6px;gap:2px}.desc{display:none}.hud{padding:3px 9px}.board{height:calc(100dvh - 88px);width:calc((100dvh - 88px)*8/14)}.controls button{height:30px}.help{display:none}
+.side{width:68px;flex:0 0 68px;display:flex;flex-direction:column;gap:5px}
+.next-title{font-size:9px;color:#9ba3af;font-weight:800;text-align:center;letter-spacing:.1em}
+.preview{background:#151922;border:1px solid #303744;border-radius:7px;padding:4px 2px;display:flex;justify-content:center;align-items:center;gap:2px;min-height:38px}
+.mini{width:21px;height:21px;border-radius:4px;background:#ffd43b;color:#111;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:950}
+.mini.empty{background:#292f39;color:#fff}
+.controls{width:min(92vw,400px);display:grid;grid-template-columns:repeat(5,1fr);gap:4px;flex:0 0 auto}
+button{border:0;border-radius:8px;background:#272e38;color:#fff;height:clamp(32px,6.1dvh,47px);font-size:clamp(17px,3.4dvh,23px);font-weight:900;touch-action:manipulation}
+button:active{background:#3b4451;transform:scale(.97)}
+button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
+.bottom-row{display:flex;gap:6px;justify-content:center;flex:0 0 auto}
+.help{font-size:7px;color:#68717e;line-height:1;flex:0 0 auto}
+.overlay{position:absolute;inset:3px;border-radius:6px;background:#090b10ed;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:12px}
+.overlay.hidden{display:none}
+.overlay h2{font-size:clamp(20px,4.5dvh,30px);margin:0 0 6px}
+.overlay p{font-size:11px;color:#aab1bc;margin:0 0 14px;line-height:1.5}
+.overlay button{height:42px;padding:0 25px;font-size:14px;background:#ffd43b;color:#111}
+.pause-cover{position:absolute;inset:3px;background:#090b10d9;z-index:8;display:none;align-items:center;justify-content:center;font-weight:950;font-size:26px}
+.pause-cover.show{display:flex}
+@media(max-height:500px){
+ .subtitle,.help{display:none}
+ .app{gap:2px}
+ .hud{padding:2px 8px}
+ .utility{height:25px!important}
 }
 </style>
 </head>
 <body>
-<div class="app">
-<h1>MAYAMA</h1>
-<div class="desc">M・A・Y をつないで MAYAMA を作れ</div>
-<div class="hud">
-  <div><small>SCORE</small><div class="score" id="score">0</div></div>
-  <div class="chain" id="chain"></div>
-</div>
-<div class="board">
-  <div id="grid" class="grid"></div>
-  <div id="overlay" class="overlay">
-    <div class="gameover">GAME OVER</div>
-    <div class="final">SCORE <span id="final">0</span></div>
-    <button class="restart" id="restart">もう一度</button>
+<main class="app">
+  <h1>MAYAMA</h1>
+  <div class="subtitle">M・A・Y をつないで MAYAMA を作れ</div>
+  <section class="hud">
+    <div><small>SCORE</small><div class="score" id="score">0</div></div>
+    <div class="chain" id="chain"></div>
+  </section>
+  <div class="play-area" id="playArea">
+    <div class="board" id="board">
+      <div class="grid" id="grid"></div>
+      <div class="pause-cover" id="pauseCover">PAUSED</div>
+      <div class="overlay" id="startOverlay">
+        <h2 id="overlayTitle">MAYAMA</h2>
+        <p id="overlayText">M・A・Y の2マスピースを操作して<br>「MAYAMA」をつなげよう。</p>
+        <button id="startBtn">START</button>
+      </div>
+    </div>
+    <aside class="side">
+      <div class="next-title">NEXT</div>
+      <div class="preview" id="next0"></div>
+      <div class="preview" id="next1"></div>
+      <div class="preview" id="next2"></div>
+    </aside>
   </div>
-</div>
-<div class="controls">
-<button data-a="left">←</button>
-<button data-a="rotate">↻</button>
-<button data-a="down">↓</button>
-<button data-a="right">→</button>
-<button data-a="drop">⤓</button>
-</div>
-<div class="help">← → 移動　↻ 回転　↓ 1段　⤓ 即落下</div>
-</div>
-
+  <div class="controls">
+    <button data-a="left" aria-label="左へ">←</button>
+    <button data-a="rotate" aria-label="回転">↻</button>
+    <button data-a="down" aria-label="下へ">↓</button>
+    <button data-a="right" aria-label="右へ">→</button>
+    <button data-a="drop" aria-label="即落下">⤓</button>
+  </div>
+  <div class="bottom-row">
+    <button class="utility" id="pauseBtn">一時停止</button>
+    <button class="utility" id="restartBtn">やり直す</button>
+  </div>
+  <div class="help">← → 移動　↻ 回転　↓ 1段落下　⤓ 即落下</div>
+</main>
 <script>
 const W=8,H=14,TARGET="MAYAMA";
-let board,piece,score,chain,busy,over,timer;
+let board=[],piece=null,queue=[],score=0,busy=false,started=false,paused=false,gameOver=false,timer=null;
 
-function empty(){return Array.from({length:H},()=>Array(W).fill(null))}
-function rand(){return "MAY"[Math.floor(Math.random()*3)]}
-
-/*
-  落下ピースは「2個の独立した正方形オブジェクト」。
-  piece.cells は各セルの相対座標と文字を持つ。
-  固定すると board の各セルへ別々のオブジェクトとして格納する。
-*/
-function newPiece(){
-  const letters=["M","A","Y"];
-  const a=letters[Math.floor(Math.random()*3)];
-  const b=letters[Math.floor(Math.random()*3)];
-  return {
-    x:3,y:0,r:0,
-    cells:[{x:0,y:0,l:a},{x:0,y:1,l:b}],
-    id:Math.random().toString(36).slice(2)
-  };
-}
-function positions(p){
- const a=p.cells ? p.cells[0].l : p.letters[0];
- const b=p.cells ? p.cells[1].l : p.letters[1];
- const r=(p.r!==undefined?p.r:p.rot)%4;
+function randLetter(){return ["M","A","Y"][Math.floor(Math.random()*3)]}
+function makePiece(){return {x:3,y:0,r:0,letters:[randLetter(),randLetter()],id:Math.random().toString(36).slice(2)}}
+function refillQueue(){while(queue.length<4)queue.push(makePiece())}
+function emptyBoard(){return Array.from({length:H},()=>Array(W).fill(null))}
+function cellsOf(p){
+ const a=p.letters[0],b=p.letters[1],r=p.r%4;
+ // Letter identity is preserved through all four orientations.
  if(r===0)return [{x:p.x,y:p.y,l:a},{x:p.x,y:p.y+1,l:b}];
  if(r===1)return [{x:p.x+1,y:p.y,l:a},{x:p.x,y:p.y,l:b}];
  if(r===2)return [{x:p.x,y:p.y+1,l:a},{x:p.x,y:p.y,l:b}];
  return [{x:p.x,y:p.y,l:a},{x:p.x+1,y:p.y,l:b}];
 }
-function valid(p){
-  return positions(p).every(c=>c.x>=0&&c.x<W&&c.y>=0&&c.y<H&&!board[c.y][c.x]);
+function valid(p){return cellsOf(p).every(c=>c.x>=0&&c.x<W&&c.y>=0&&c.y<H&&!board[c.y][c.x])}
+function render(matches=[]){
+ const grid=document.getElementById("grid");grid.innerHTML="";
+ const falling=new Map(piece?cellsOf(piece).map(c=>[c.x+","+c.y,c]):[]);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const el=document.createElement("div");el.className="cell";const key=x+","+y;
+  if(board[y][x])el.textContent=board[y][x].l;
+  if(falling.has(key)){el.textContent=falling.get(key).l;el.classList.add("falling")}
+  if(matches.includes(key))el.classList.add("flash");
+  grid.appendChild(el);
+ }
+ document.getElementById("score").textContent=score;
+ [0,1,2].forEach(i=>{
+  const box=document.getElementById("next"+i);box.innerHTML="";
+  const p=queue[i];
+  if(p){p.letters.forEach(l=>{const d=document.createElement("span");d.className="mini";d.textContent=l;box.appendChild(d)})}
+  else box.innerHTML='<span class="mini empty">?</span><span class="mini empty">?</span>';
+ });
 }
-function render(match=[]){
-  const g=document.getElementById("grid");g.innerHTML="";
-  const f=new Map(positions(piece).map(c=>[c.x+","+c.y,c]));
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    const d=document.createElement("div");d.className="cell";const k=x+","+y;
-    if(board[y][x])d.textContent=board[y][x].l;
-    if(f.has(k)){d.textContent=f.get(k).l;d.classList.add("falling")}
-    if(match.includes(k))d.classList.add("flash");
-    g.appendChild(d);
-  }
-  document.getElementById("score").textContent=score;
-}
-function move(dx){
-  if(over||busy)return;
-  const p={...piece,x:piece.x+dx};
-  if(valid(p)){piece=p;render()}
-}
+function move(dx){if(!started||paused||gameOver||busy)return;const q={...piece,x:piece.x+dx};if(valid(q)){piece=q;render()}}
 function rotate(){
- if(gameOver||over||busy)return;
- const key=piece.r!==undefined?'r':'rot';
- const next={...piece,[key]:((piece[key]||0)+1)%4};
- if(valid(next)){piece=next;render();return}
- for(const dx of [-1,1,-2,2]){
-  const q={...next,x:next.x+dx};
-  if(valid(q)){piece=q;render();return}
+ if(!started||paused||gameOver||busy)return;
+ const q={...piece,r:(piece.r+1)%4};
+ if(valid(q)){piece=q;render();return}
+ for(const dx of [-1,1,-2,2]){const shifted={...q,x:q.x+dx};if(valid(shifted)){piece=shifted;render();return}}
+}
+function softDrop(){if(!started||paused||gameOver||busy)return;const q={...piece,y:piece.y+1};if(valid(q)){piece=q;render()}else lockPiece()}
+function hardDrop(){if(!started||paused||gameOver||busy)return;while(valid({...piece,y:piece.y+1}))piece.y++;render();lockPiece()}
+function lockPiece(){
+ const cs=cellsOf(piece);
+ if(!cs.every(c=>c.y>=0&&c.y<H)){endGame();return}
+ cs.forEach(c=>board[c.y][c.x]={l:c.l,id:Math.random().toString(36).slice(2)});
+ // The two cells become independent immediately after locking.
+ settleCells();
+ piece=queue.shift();refillQueue();
+ if(!valid(piece)){render();endGame();return}
+ render();resolveMatches();
+}
+function settleCells(){
+ let moved=true;
+ while(moved){
+  moved=false;
+  for(let y=H-2;y>=0;y--)for(let x=0;x<W;x++){
+   if(board[y][x]&&!board[y+1][x]){board[y+1][x]=board[y][x];board[y][x]=null;moved=true}
+  }
  }
 }
-function down(){
-  if(over||busy)return;
-  const p={...piece,y:piece.y+1};
-  if(valid(p)){piece=p;render()}else lock()
-}
-function hardDrop(){
-  if(over||busy)return;
-  while(valid({...piece,y:piece.y+1}))piece.y++;
-  render();lock()
-}
-function lock(){
-  const cs=positions(piece);
-  if(!cs.every(c=>c.y>=0&&c.y<H)){end();return}
-  cs.forEach(c=>board[c.y][c.x]={l:c.l,id:Math.random().toString(36).slice(2)});
-  piece=newPiece();
-  if(!valid(piece)){end();return}
-  render();resolve();
-}
-function neighbors(x,y){
- return [[x+1,y],[x-1,y],[x,y+1],[x,y-1]]
- .filter(([a,b])=>a>=0&&a<W&&b>=0&&b<H);
-}
-
-/*
-  MAYAMA は「M→A→Y→A→M→A」の6個の独立セルを、
-  4方向の隣接だけでたどれる場合に成立。
-  同じセルは1つの経路内で再利用しない。
-*/
+function neighbors(x,y){return [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([a,b])=>a>=0&&a<W&&b>=0&&b<H)}
 function findMatches(){
  const found=new Set();
  for(let sy=0;sy<H;sy++)for(let sx=0;sx<W;sx++){
   if(!board[sy][sx]||board[sy][sx].l!=="M")continue;
   function dfs(x,y,i,path){
-   if(i===TARGET.length-1){
-    path.forEach(([a,b])=>found.add(a+","+b));return;
-   }
+   if(i===TARGET.length-1){path.forEach(([a,b])=>found.add(a+","+b));return}
    for(const [nx,ny] of neighbors(x,y)){
-    if(!board[ny][nx]||board[ny][nx].l!==TARGET[i+1])continue;
-    if(path.some(([a,b])=>a===nx&&b===ny))continue;
-    dfs(nx,ny,i+1,path.concat([[nx,ny]]));
+    if(!board[ny][nx]||board[ny][nx].l!==TARGET[i+1]||path.some(([a,b])=>a===nx&&b===ny))continue;
+    dfs(nx,ny,i+1,path.concat([[nx,ny]]))
    }
   }
-  dfs(sx,sy,0,[[sx,sy]]);
+  dfs(sx,sy,0,[[sx,sy]])
  }
- return [...found];
-}
-
-/* 消去後、各列のセルを下へ詰める。浮いたセルはすべて落下する。 */
-function gravity(){
- let moved=true;
- while(moved){
-  moved=false;
-  for(let y=H-2;y>=0;y--){
-   for(let x=0;x<W;x++){
-    if(board[y][x]&&!board[y+1][x]){
-     board[y+1][x]=board[y][x];board[y][x]=null;moved=true;
-    }
-   }
-  }
- }
+ return [...found]
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-
-async function resolve(){
- busy=true;chain=0;
+async function resolveMatches(){
+ busy=true;let chain=0;
  while(true){
-  const m=findMatches();
-  if(!m.length)break;
-  chain++;
-  document.getElementById("chain").textContent=chain>1?`${chain} CHAIN!`:"";
-  render(m);await wait(190);
-  m.forEach(k=>{const[x,y]=k.split(",").map(Number);board[y][x]=null});
-  score+=m.length*100*chain;
-  render();await wait(70);
-  gravity();render();await wait(110);
+  const matches=findMatches();if(!matches.length)break;
+  chain++;document.getElementById("chain").textContent=chain>1?`${chain} CHAIN!`:"";
+  render(matches);await wait(180);
+  matches.forEach(key=>{const[x,y]=key.split(",").map(Number);board[y][x]=null});
+  score+=matches.length*100*chain;settleCells();render();await wait(100);
  }
- document.getElementById("chain").textContent="";
- busy=false;
+ document.getElementById("chain").textContent="";busy=false;
 }
-function end(){
- over=true;clearInterval(timer);
- document.getElementById("final").textContent=score;
- document.getElementById("overlay").classList.add("show");
+function stopTimer(){if(timer){clearInterval(timer);timer=null}}
+function startTimer(){stopTimer();timer=setInterval(softDrop,650)}
+function startGame(){
+ board=emptyBoard();queue=[];refillQueue();piece=queue.shift();refillQueue();
+ score=0;busy=false;paused=false;gameOver=false;started=true;
+ document.getElementById("startOverlay").classList.add("hidden");
+ document.getElementById("pauseCover").classList.remove("show");
+ document.getElementById("pauseBtn").textContent="一時停止";
+ render();startTimer();
+}
+function togglePause(){
+ if(!started||gameOver)return;
+ paused=!paused;
+ document.getElementById("pauseCover").classList.toggle("show",paused);
+ document.getElementById("pauseBtn").textContent=paused?"再開":"一時停止";
+}
+function endGame(){
+ gameOver=true;stopTimer();started=false;
+ const overlay=document.getElementById("startOverlay");
+ overlay.classList.remove("hidden");
+ document.getElementById("overlayTitle").textContent="GAME OVER";
+ document.getElementById("overlayText").innerHTML="SCORE："+score+"<br>もう一度チャレンジ";
+ document.getElementById("startBtn").textContent="RESTART";
  render();
 }
-function restart(){
- board=empty();score=0;chain=0;busy=false;over=false;
- document.getElementById("overlay").classList.remove("show");
- piece=newPiece();render();
- clearInterval(timer);timer=setInterval(down,650);
-}
-document.querySelectorAll("[data-a]").forEach(b=>b.addEventListener("click",()=>{
- const a=b.dataset.a;
- if(a==="left")move(-1);if(a==="right")move(1);if(a==="rotate")rotate();
- if(a==="down")down();if(a==="drop")hardDrop();
+document.querySelectorAll("[data-a]").forEach(btn=>btn.addEventListener("click",()=>{
+ const a=btn.dataset.a;if(a==="left")move(-1);if(a==="right")move(1);if(a==="rotate")rotate();if(a==="down")softDrop();if(a==="drop")hardDrop()
 }));
-document.getElementById("restart").addEventListener("click",restart);
+document.getElementById("startBtn").addEventListener("click",startGame);
+document.getElementById("pauseBtn").addEventListener("click",togglePause);
+document.getElementById("restartBtn").addEventListener("click",()=>{
+ stopTimer();started=false;paused=false;gameOver=false;
+ document.getElementById("pauseCover").classList.remove("show");
+ document.getElementById("overlayTitle").textContent="MAYAMA";
+ document.getElementById("overlayText").innerHTML="M・A・Y の2マスピースを操作して<br>「MAYAMA」をつなげよう。";
+ document.getElementById("startBtn").textContent="START";
+ document.getElementById("startOverlay").classList.remove("hidden");
+ board=emptyBoard();queue=[];refillQueue();piece=queue.shift();refillQueue();score=0;render();
+});
 document.addEventListener("keydown",e=>{
  if(e.key==="ArrowLeft"){e.preventDefault();move(-1)}
  else if(e.key==="ArrowRight"){e.preventDefault();move(1)}
  else if(e.key==="ArrowUp"){e.preventDefault();rotate()}
- else if(e.key==="ArrowDown"){e.preventDefault();down()}
+ else if(e.key==="ArrowDown"){e.preventDefault();softDrop()}
  else if(e.code==="Space"){e.preventDefault();hardDrop()}
- else if(e.key.toLowerCase()==="r")restart();
+ else if(e.key==="Escape"||e.key.toLowerCase()==="p")togglePause()
 });
-restart();
-</script>
-
-<script>
-function fitBoard(){
-  const app=document.querySelector('.app');
-  const board=document.querySelector('.board');
-  if(!app||!board)return;
-  const vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
-  const fixed=[...app.children].filter(el=>el!==board);
-  let used=0;
-  fixed.forEach(el=>used+=el.getBoundingClientRect().height);
-  const gap=parseFloat(getComputedStyle(app).gap)||0;
-  used += gap*(app.children.length-1);
-  const padding=parseFloat(getComputedStyle(app).paddingTop)+parseFloat(getComputedStyle(app).paddingBottom);
-  const available=Math.max(160,vh-used-padding-2);
-  const maxW=Math.min(window.innerWidth*.90,390);
-  const h=Math.min(available,maxW*14/8);
-  board.style.height=Math.floor(h)+'px';
-  board.style.width=Math.floor(h*8/14)+'px';
-}
-window.addEventListener('resize',fitBoard);
-window.addEventListener('orientationchange',()=>setTimeout(fitBoard,100));
-if(window.visualViewport)window.visualViewport.addEventListener('resize',fitBoard);
-document.addEventListener('DOMContentLoaded',fitBoard);
-setTimeout(fitBoard,100);
+board=emptyBoard();refillQueue();piece=queue.shift();refillQueue();render();
 </script>
 </body>
 </html>

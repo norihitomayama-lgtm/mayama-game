@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
@@ -35,11 +35,11 @@ button:active{background:#3b4451;transform:scale(.97)}
 button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
 .bottom-row{display:flex;gap:6px;justify-content:center;flex:0 0 auto;width:min(92vw,400px)}
 .help{font-size:7px;color:#68717e;line-height:1;flex:0 0 auto}
-.overlay{position:absolute;inset:3px;border-radius:6px;background:#090b10ed;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:12px}
+.overlay{position:absolute;inset:3px;border-radius:6px;background:#090b10ed;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:10px;overflow-y:auto}
 .overlay.hidden{display:none}
 .overlay h2{font-size:clamp(20px,4.5dvh,30px);margin:0 0 6px}
 .overlay p{font-size:clamp(10px,1.65dvh,12px);color:#c0c7d1;margin:0 0 14px;line-height:1.55;max-width:280px}.overlay .result-stats{font-size:clamp(12px,2dvh,15px);line-height:1.8;font-weight:800;color:#f8f9fb}
-.overlay button{height:42px;padding:0 25px;font-size:14px;background:#ffd43b;color:#111}
+.overlay button{height:38px;padding:0 18px;font-size:12px;background:#ffd43b;color:#111;flex:0 0 auto}.overlay .secondary{background:#343b47;color:#fff}.rank-form{display:none;width:100%;max-width:260px;gap:6px;margin:0 0 8px}.rank-form.show{display:flex;flex-direction:column}.rank-form input{width:100%;height:34px;border:1px solid #505967;border-radius:6px;background:#151922;color:#fff;padding:0 9px;font-size:13px}.rank-form button{width:100%}.rank-status{font-size:10px;color:#c0c7d1;min-height:14px}.leaderboard{width:100%;max-width:280px;text-align:left;margin:8px 0;font-size:10px}.leaderboard h3{margin:4px 0 6px;text-align:center;color:#ffd43b;font-size:12px;letter-spacing:.1em}.leader-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:5px;padding:4px 2px;border-bottom:1px solid #303744}.leader-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.leader-score{font-weight:900;color:#ffd43b}.rank-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .pause-cover{position:absolute;inset:3px;background:#090b10f2;z-index:8;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-weight:950;font-size:26px;border-radius:6px}.pause-actions{display:flex;flex-direction:column;gap:9px;width:min(82%,230px)}.pause-actions button{height:42px;font-size:14px}.pause-actions .resume{background:#ffd43b;color:#111}.pause-actions .return{background:#343b47;color:#fff}
 .pause-cover.show{display:flex}
 @media(max-height:500px){
@@ -66,6 +66,9 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
         <h2 id="overlayTitle">MAYAMA</h2>
         <p id="overlayText">HOW TO PLAY<br>Move and rotate the falling pairs.<br>Connect M-A-Y-A-M-A in order, using up, down, left or right.<br>Matched letters disappear and earn points.<br>Clear chains for bonus points. The more you score, the faster pieces fall!</p>
         <button id="startBtn">START</button>
+        <button id="rankingBtn" class="secondary">GLOBAL RANKING</button>
+        <div id="rankForm" class="rank-form"><input id="nicknameInput" maxlength="16" placeholder="Nickname (1–16 characters)" autocomplete="nickname"><button id="submitScoreBtn">SUBMIT SCORE</button><div id="rankStatus" class="rank-status"></div></div>
+        <div id="leaderboard" class="leaderboard" hidden></div>
       </div>
     </div>
     <aside class="side">
@@ -97,6 +100,9 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
 const W=8,H=14,TARGET="MAYAMA";
 let board=[],piece=null,queue=[],score=0,busy=false,started=false,paused=false,gameOver=false,timer=null;
 let mayamaCount=0,maxChain=0;
+const SUPABASE_URL="https://yifwxuznctajopwcnlge.supabase.co";
+const SUPABASE_KEY="sb_publishable_vsGxHWY15qN5AWnINc-zVA_dRpjC6WD";
+let scoreSubmitted=false;
 
 function randLetter(){
  const n=Math.random();
@@ -186,7 +192,7 @@ async function resolveMatches(){
   const result=findMatches();if(!result.cells.length)break;
    const matches=result.cells;
    chain++;mayamaCount+=result.count;maxChain=Math.max(maxChain,chain);
-  chain++;document.getElementById("chain").textContent=chain>1?`${chain} CHAIN!`:"";
+  document.getElementById("chain").textContent=chain>1?`${chain} CHAIN!`:"";
   render(matches);await wait(180);
   matches.forEach(key=>{const[x,y]=key.split(",").map(Number);board[y][x]=null});
   score+=matches.length*100*chain;settleCells();render();await wait(100);
@@ -206,9 +212,11 @@ function startTimer(){
 }
 function startGame(){
  board=emptyBoard();queue=[];refillQueue();piece=queue.shift();refillQueue();
- score=0;mayamaCount=0;maxChain=0;busy=false;paused=false;gameOver=false;started=true;
+ score=0;mayamaCount=0;maxChain=0;scoreSubmitted=false;busy=false;paused=false;gameOver=false;started=true;
  gameStartAt=Date.now();pausedAt=0;pausedTotal=0;lastDropAt=gameStartAt;
  document.getElementById("startOverlay").classList.add("hidden");
+ document.getElementById("rankForm").classList.remove("show");
+ document.getElementById("leaderboard").hidden=true;
  document.getElementById("pauseCover").classList.remove("show");
  document.getElementById("pauseBtn").textContent="PAUSE";
  render();startTimer();
@@ -225,10 +233,44 @@ function endGame(){
  const overlay=document.getElementById("startOverlay");
  overlay.classList.remove("hidden");
  document.getElementById("overlayTitle").textContent="GAME OVER";
-  document.getElementById("overlayText").innerHTML=`<span class="result-stats">SCORE: ${score}<br>MAYAMA CLEARS: ${mayamaCount}<br>MAX CHAIN: ${maxChain}</span><br><br>TRY AGAIN`;
- document.getElementById("startBtn").textContent="RESTART";
+  document.getElementById("overlayText").innerHTML=`<span class="result-stats">SCORE: ${score}<br>MAYAMA CLEARS: ${mayamaCount}<br>MAX CHAIN: ${maxChain}</span><br><br>SUBMIT YOUR SCORE TO THE GLOBAL RANKING`;
+ document.getElementById("startBtn").textContent="PLAY AGAIN";
+ document.getElementById("rankingBtn").classList.add("secondary");
+ document.getElementById("rankForm").classList.add("show");
+ document.getElementById("rankStatus").textContent="";
+ document.getElementById("submitScoreBtn").disabled=false;
+ document.getElementById("submitScoreBtn").textContent="SUBMIT SCORE";
+ document.getElementById("leaderboard").hidden=false;
+ loadLeaderboard();
  render();
 }
+async function loadLeaderboard(){
+ const box=document.getElementById("leaderboard");
+ box.hidden=false;box.replaceChildren();
+ const heading=document.createElement("h3");heading.textContent="GLOBAL TOP 10";box.appendChild(heading);
+ const loading=document.createElement("div");loading.textContent="Loading ranking…";loading.style.textAlign="center";box.appendChild(loading);
+ try{
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/scores?select=nickname,score&order=score.desc,created_at.asc&limit=10`,{headers:{apikey:SUPABASE_KEY}});
+  if(!response.ok)throw new Error(`HTTP ${response.status}`);
+  const rows=await response.json();box.replaceChildren(heading);
+  if(!rows.length){const empty=document.createElement("div");empty.textContent="No scores yet. Be the first!";empty.style.textAlign="center";box.appendChild(empty);return}
+  rows.forEach((row,i)=>{const line=document.createElement("div");line.className="leader-row";const rank=document.createElement("span");rank.textContent=`${i+1}.`;const name=document.createElement("span");name.className="leader-name";name.textContent=row.nickname;const points=document.createElement("span");points.className="leader-score";points.textContent=Number(row.score).toLocaleString();line.append(rank,name,points);box.appendChild(line)});
+ }catch(err){box.replaceChildren(heading);const msg=document.createElement("div");msg.textContent="Could not load ranking. Check your Supabase table and policies.";msg.style.textAlign="center";box.appendChild(msg)}
+}
+async function submitScore(){
+ if(scoreSubmitted)return;
+ const input=document.getElementById("nicknameInput");const nickname=input.value.trim();const status=document.getElementById("rankStatus");
+ if(!nickname||nickname.length>16){status.textContent="Enter a nickname (1–16 characters).";return}
+ const button=document.getElementById("submitScoreBtn");button.disabled=true;button.textContent="SUBMITTING…";status.textContent="";
+ try{
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/scores`,{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({nickname,score,mayama_clears:mayamaCount,max_chain:maxChain})});
+  if(!response.ok){const detail=await response.text();throw new Error(detail||`HTTP ${response.status}`)}
+  scoreSubmitted=true;status.textContent="Score submitted!";button.textContent="SUBMITTED";await loadLeaderboard();
+ }catch(err){status.textContent="Submission failed. Check table permissions and try again.";button.disabled=false;button.textContent="TRY AGAIN"}
+}
+document.getElementById("submitScoreBtn").addEventListener("click",submitScore);
+document.getElementById("rankingBtn").addEventListener("click",()=>{const box=document.getElementById("leaderboard");box.hidden=!box.hidden;if(!box.hidden)loadLeaderboard()});
+
 document.querySelectorAll("[data-a]").forEach(btn=>btn.addEventListener("click",()=>{
  const a=btn.dataset.a;if(a==="left")move(-1);if(a==="right")move(1);if(a==="rotate")rotate();if(a==="down")softDrop();if(a==="drop")hardDrop()
 }));
@@ -245,9 +287,13 @@ document.getElementById("restartBtn").addEventListener("click",()=>{
  document.getElementById("overlayTitle").textContent="MAYAMA";
  document.getElementById("overlayText").innerHTML="HOW TO PLAY<br>Move and rotate the falling pairs.<br>Connect M-A-Y-A-M-A in order, using up, down, left or right.<br>Matched letters disappear and earn points.<br>Clear chains for bonus points. The more you score, the faster pieces fall!";
  document.getElementById("startBtn").textContent="START";
+ document.getElementById("rankForm").classList.remove("show");
+ document.getElementById("leaderboard").hidden=true;
+ document.getElementById("overlayTitle").textContent="MAYAMA";
  document.getElementById("startOverlay").classList.remove("hidden");
  board=emptyBoard();queue=[];refillQueue();piece=queue.shift();refillQueue();score=0;render();
 });
+document.getElementById("rankingBtn").classList.add("secondary");
 document.addEventListener("keydown",e=>{
  if(e.key==="ArrowLeft"){e.preventDefault();move(-1)}
  else if(e.key==="ArrowRight"){e.preventDefault();move(1)}

@@ -286,6 +286,10 @@ async function loadLeaderboard(){
   const bestEl=stats.querySelector("#myBest"),rankEl=stats.querySelector("#myRank");
   if(personal&&personal.best_score!==null&&personal.best_score!==undefined){bestEl.textContent=Number(personal.best_score).toLocaleString();rankEl.textContent=personal.rank?`#${personal.rank}`:"—"}
   else {bestEl.textContent="—";rankEl.textContent="Not ranked"}
+  // When the current player appears in the displayed leaderboard, use that exact row rank
+  // so the personal rank card cannot disagree with the leaderboard ordering.
+  const ownRow=rows.find(row=>row.player_id===playerId);
+  if(ownRow)rankEl.textContent=`#${Number(ownRow.rank)}`;
   box.replaceChildren(heading,subtitle,stats);
   if(!rows.length){const empty=document.createElement("div");empty.className="leader-empty";empty.textContent="No scores yet. Be the first to claim the top spot!";box.appendChild(empty);return}
   const columns=document.createElement("div");columns.className="leader-columns";columns.innerHTML="<span>RANK</span><span>PLAYER</span><span>SCORE</span>";box.appendChild(columns);

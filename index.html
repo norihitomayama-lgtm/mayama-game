@@ -26,8 +26,8 @@ small{display:block;color:#858e9b;font-size:7px;letter-spacing:.12em}.score{font
 .mini.empty{background:#292f39;color:#fff}
 .controls{width:min(92vw,400px);display:flex;justify-content:space-between;gap:12px;flex:0 0 auto}
  .control-group{display:grid;gap:5px;align-items:stretch}
- .move-group{grid-template-columns:repeat(2,minmax(48px,1fr));width:36%}
- .action-group{grid-template-columns:repeat(3,minmax(0,1fr));width:60%}
+ .move-group{grid-template-columns:repeat(3,minmax(0,1fr));width:60%}
+ .action-group{grid-template-columns:repeat(2,minmax(0,1fr));width:36%}
  .control-group button{height:clamp(40px,7dvh,52px);font-size:clamp(18px,3.5dvh,24px)}
  .control-label{font-size:8px;color:#8993a1;text-align:center;letter-spacing:.08em;font-weight:800}
 button{border:0;border-radius:8px;background:#272e38;color:#fff;height:clamp(32px,6.1dvh,47px);font-size:clamp(17px,3.4dvh,23px);font-weight:900;touch-action:manipulation}
@@ -82,19 +82,19 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
     <div class="control-group move-group">
       <div class="control-label" style="grid-column:1 / -1">MOVE</div>
       <button data-a="left" aria-label="Move left">←</button>
+      <button data-a="down" aria-label="Soft drop one cell">↓</button>
       <button data-a="right" aria-label="Move right">→</button>
     </div>
     <div class="control-group action-group">
       <div class="control-label" style="grid-column:1 / -1">ACTIONS</div>
       <button data-a="rotate" aria-label="Rotate">↻</button>
-      <button data-a="down" aria-label="Soft drop">↓</button>
       <button data-a="drop" aria-label="Hard drop">⤓</button>
     </div>
   </div>
   <div class="bottom-row">
     <button class="utility" id="pauseBtn">PAUSE</button>
   </div>
-  <div class="help">MOVE: ← →　ROTATE: ↻　SOFT DROP: ↓　HARD DROP: ⤓</div>
+  <div class="help">MOVE: ← ↓ →　ACTIONS: ROTATE ↻ / SOFT DROP ↓ / HARD DROP ⤓</div>
 </main>
 <script>
 const W=8,H=14,TARGET="MAYAMA";
@@ -104,6 +104,7 @@ const SUPABASE_URL="https://yifwxuznctajopwcnlge.supabase.co";
 const SUPABASE_KEY="sb_publishable_vsGxHWY15qN5AWnINc-zVA_dRpjC6WD";
 let scoreSubmitted=false;
 const PLAYER_ID_KEY="mayama-player-id-v1";
+const NICKNAME_KEY="mayama-nickname-v1";
 function getPlayerId(){
  try{
   let id=localStorage.getItem(PLAYER_ID_KEY);
@@ -112,6 +113,11 @@ function getPlayerId(){
  }catch(e){return ""}
 }
 const playerId=getPlayerId();
+const nicknameInput=document.getElementById("nicknameInput");
+try{nicknameInput.value=localStorage.getItem(NICKNAME_KEY)||""}catch(e){}
+nicknameInput.addEventListener("input",()=>{
+ try{localStorage.setItem(NICKNAME_KEY,nicknameInput.value.trim())}catch(e){}
+});
 
 function randLetter(){
  const n=Math.random();
@@ -285,6 +291,7 @@ async function submitScore(){
  if(scoreSubmitted)return;
  const input=document.getElementById("nicknameInput");const nickname=input.value.trim();const status=document.getElementById("rankStatus");
  if(!nickname||nickname.length>16){status.textContent="Enter a nickname (1–16 characters).";return}
+ try{localStorage.setItem(NICKNAME_KEY,nickname)}catch(e){}
  if(!playerId){status.textContent="Could not create a player ID in this browser.";return}
  const button=document.getElementById("submitScoreBtn");button.disabled=true;button.textContent="SUBMITTING…";status.textContent="";
  try{

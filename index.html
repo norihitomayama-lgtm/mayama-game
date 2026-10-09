@@ -18,8 +18,17 @@ small{display:block;color:#858e9b;font-size:7px;letter-spacing:.12em}.score{font
 .cell{min-width:0;min-height:0;background:#292f39;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:clamp(10px,3.1dvh,24px);font-weight:950;line-height:1}
 .cell.falling{background:#ffd43b;color:#101216;box-shadow:inset 0 0 0 1.5px #fff}
 .cell.hint{outline:2px solid #53e0c1;outline-offset:-2px;background:#17483f!important;color:#fff!important;box-shadow:0 0 8px #53e0c188;z-index:1}
-.cell.flash{background:#fff;color:#111;animation:pop .18s forwards}
-@keyframes pop{to{opacity:0;transform:scale(.15)}}
+.cell.flash{position:relative;z-index:3;background:#fff!important;color:#111!important;box-shadow:0 0 12px #fff,0 0 24px #ffd43b;animation:clear-pop .42s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes clear-pop{0%{opacity:1;transform:scale(1);filter:brightness(1)}18%{opacity:1;transform:scale(1.22);filter:brightness(2)}48%{opacity:1;transform:scale(1.08);filter:brightness(1.7)}100%{opacity:0;transform:scale(.08) rotate(12deg);filter:brightness(2)}}
+.board.clear-shake{animation:board-shake .34s ease-out}
+@keyframes board-shake{0%,100%{transform:translate(0,0)}18%{transform:translate(-3px,1px)}36%{transform:translate(3px,-1px)}54%{transform:translate(-2px,0)}72%{transform:translate(2px,1px)}}
+.fx-layer{position:absolute;inset:3px;z-index:8;pointer-events:none;overflow:hidden;border-radius:7px}
+.fx-particle{position:absolute;width:5px;height:5px;border-radius:50%;background:#ffd43b;box-shadow:0 0 7px #ffd43b;animation:particle-burst .48s ease-out forwards}
+.fx-particle.white{background:#fff;box-shadow:0 0 8px #fff}
+@keyframes particle-burst{0%{opacity:1;transform:translate(0,0) scale(1.2)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.1)}}
+.clear-callout{position:absolute;left:50%;top:43%;z-index:9;transform:translate(-50%,-50%) scale(.55);white-space:nowrap;color:#ffd43b;font-weight:1000;font-size:clamp(18px,4dvh,30px);font-style:italic;letter-spacing:.08em;text-shadow:0 2px 0 #111,0 0 8px #ffd43b,0 0 22px #ff9f1c;animation:callout .72s cubic-bezier(.15,.8,.2,1) forwards;pointer-events:none}
+.clear-callout.combo{color:#fff;text-shadow:0 0 8px #fff,0 0 20px #ffd43b}
+@keyframes callout{0%{opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(-5deg)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(2deg)}32%{transform:translate(-50%,-50%) scale(1)}78%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1.08)}}
 .side{width:68px;flex:0 0 68px;display:flex;flex-direction:column;gap:5px}
 .next-title{font-size:9px;color:#9ba3af;font-weight:800;text-align:center;letter-spacing:.1em}
 .preview{background:#151922;border:1px solid #303744;border-radius:7px;padding:4px 2px;display:flex;justify-content:center;align-items:center;gap:2px;min-height:38px}
@@ -62,7 +71,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
   </section>
   <div class="play-area" id="playArea">
     <div class="board" id="board">
-      <div class="grid" id="grid"></div>
+      <div class="grid" id="grid"></div><div class="fx-layer" id="fxLayer"></div>
       <div class="pause-cover" id="pauseCover"><div>PAUSED</div><div class="pause-actions"><button class="resume" id="resumeBtn">RESUME</button><button class="return" id="restartBtn">BACK TO TITLE</button></div></div>
       <div class="overlay" id="startOverlay">
         <h2 id="overlayTitle">MAYAMA</h2>
@@ -231,6 +240,26 @@ function findMatches(){
  return {cells:[...found],count:pathCount}
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+function playClearFX(matches,chain){
+ const boardEl=document.getElementById("board"),layer=document.getElementById("fxLayer");
+ boardEl.classList.remove("clear-shake");void boardEl.offsetWidth;boardEl.classList.add("clear-shake");
+ layer.innerHTML="";
+ const label=document.createElement("div");label.className="clear-callout"+(chain>1?" combo":"");label.textContent=chain>1?`CHAIN ×${chain}!`:"MAYAMA!";layer.appendChild(label);
+ const grid=document.getElementById("grid"),cells=[...grid.children];
+ matches.forEach(key=>{
+  const [x,y]=key.split(",").map(Number),cell=cells[y*W+x];if(!cell)return;
+  const cx=cell.offsetLeft+cell.offsetWidth/2,cy=cell.offsetTop+cell.offsetHeight/2;
+  for(let i=0;i<4;i++){
+   const particle=document.createElement("span");particle.className="fx-particle"+(i%3===0?" white":"");
+   const angle=(Math.PI*2*i/4)+(Math.random()-.5)*.5,dist=16+Math.random()*24;
+   particle.style.left=`${cx}px`;particle.style.top=`${cy}px`;
+   particle.style.setProperty("--dx",`${Math.cos(angle)*dist}px`);particle.style.setProperty("--dy",`${Math.sin(angle)*dist}px`);
+   layer.appendChild(particle);
+  }
+ });
+ setTimeout(()=>{boardEl.classList.remove("clear-shake");layer.innerHTML=""},760);
+}
 async function resolveMatches(){
  busy=true;let chain=0;
  while(true){
@@ -238,9 +267,11 @@ async function resolveMatches(){
    const matches=result.cells;
    chain++;mayamaCount+=result.count;maxChain=Math.max(maxChain,chain);
   document.getElementById("chain").textContent=chain>1?`${chain} CHAIN!`:"";
-  render(matches);await wait(180);
+  render(matches);
+  playClearFX(matches,chain);
+  await wait(430);
   matches.forEach(key=>{const[x,y]=key.split(",").map(Number);board[y][x]=null});
-  score+=matches.length*100*chain;settleCells();render();await wait(100);
+  score+=matches.length*100*chain;settleCells();render();await wait(130);
  }
  document.getElementById("chain").textContent="";busy=false;
 }

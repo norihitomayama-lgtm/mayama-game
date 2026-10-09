@@ -53,7 +53,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
 <body>
 <main class="app">
   <h1>MAYAMA</h1>
-  <div class="subtitle">M・A・Y をつないで MAYAMA を作れ</div>
+  <div class="subtitle">CONNECT LETTERS. MAKE MAYAMA.</div>
   <section class="hud">
     <div><small>SCORE</small><div class="score" id="score">0</div></div>
     <div class="chain" id="chain"></div>
@@ -61,7 +61,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
   <div class="play-area" id="playArea">
     <div class="board" id="board">
       <div class="grid" id="grid"></div>
-      <div class="pause-cover" id="pauseCover"><div>PAUSED</div><div class="pause-actions"><button class="resume" id="resumeBtn">ゲームに戻る</button><button class="return" id="restartBtn">タイトルに戻る</button></div></div>
+      <div class="pause-cover" id="pauseCover"><div>PAUSED</div><div class="pause-actions"><button class="resume" id="resumeBtn">RESUME</button><button class="return" id="restartBtn">BACK TO TITLE</button></div></div>
       <div class="overlay" id="startOverlay">
         <h2 id="overlayTitle">MAYAMA</h2>
         <p id="overlayText">HOW TO PLAY<br>Move and rotate the falling pairs.<br>Connect M-A-Y-A-M-A in order, using up, down, left or right.<br>Matched letters disappear and earn points.<br>Clear chains for bonus points. The more you score, the faster pieces fall!</p>
@@ -89,7 +89,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
     </div>
   </div>
   <div class="bottom-row">
-    <button class="utility" id="pauseBtn">一時停止</button>
+    <button class="utility" id="pauseBtn">PAUSE</button>
   </div>
   <div class="help">MOVE: ← →　ROTATE: ↻　SOFT DROP: ↓　HARD DROP: ⤓</div>
 </main>
@@ -207,7 +207,7 @@ function startGame(){
  gameStartAt=Date.now();pausedAt=0;pausedTotal=0;lastDropAt=gameStartAt;
  document.getElementById("startOverlay").classList.add("hidden");
  document.getElementById("pauseCover").classList.remove("show");
- document.getElementById("pauseBtn").textContent="一時停止";
+ document.getElementById("pauseBtn").textContent="PAUSE";
  render();startTimer();
 }
 function togglePause(){
@@ -215,14 +215,14 @@ function togglePause(){
  paused=!paused;
  if(paused){pausedAt=Date.now()}else if(pausedAt){pausedTotal+=Date.now()-pausedAt;pausedAt=0;lastDropAt=Date.now()}
  document.getElementById("pauseCover").classList.toggle("show",paused);
- document.getElementById("pauseBtn").textContent=paused?"再開":"一時停止";
+ document.getElementById("pauseBtn").textContent=paused?"RESUME":"PAUSE";
 }
 function endGame(){
  gameOver=true;stopTimer();started=false;
  const overlay=document.getElementById("startOverlay");
  overlay.classList.remove("hidden");
  document.getElementById("overlayTitle").textContent="GAME OVER";
- document.getElementById("overlayText").innerHTML="SCORE："+score+"<br>もう一度チャレンジ";
+ document.getElementById("overlayText").innerHTML="SCORE："+score+"<br>TRY AGAIN";
  document.getElementById("startBtn").textContent="RESTART";
  render();
 }
@@ -234,11 +234,11 @@ document.getElementById("pauseBtn").addEventListener("click",togglePause);
 document.getElementById("resumeBtn").addEventListener("click",togglePause);
 document.getElementById("restartBtn").addEventListener("click",()=>{
  // Reset is intentionally tucked inside the pause screen and requires explicit confirmation.
- const ok=window.confirm("現在のゲームを終了して、タイトルに戻りますか？\nスコアはリセットされます。");
+ const ok=window.confirm("End this game and return to the title screen?\nYour score will be lost.");
  if(!ok)return;
  stopTimer();started=false;paused=false;gameOver=false;
  document.getElementById("pauseCover").classList.remove("show");
- document.getElementById("pauseBtn").textContent="一時停止";
+ document.getElementById("pauseBtn").textContent="PAUSE";
  document.getElementById("overlayTitle").textContent="MAYAMA";
  document.getElementById("overlayText").innerHTML="HOW TO PLAY<br>Move and rotate the falling pairs.<br>Connect M-A-Y-A-M-A in order, using up, down, left or right.<br>Matched letters disappear and earn points.<br>Clear chains for bonus points. The more you score, the faster pieces fall!";
  document.getElementById("startBtn").textContent="START";

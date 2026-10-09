@@ -38,7 +38,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
 .overlay{position:absolute;inset:3px;border-radius:6px;background:#090b10ed;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:12px}
 .overlay.hidden{display:none}
 .overlay h2{font-size:clamp(20px,4.5dvh,30px);margin:0 0 6px}
-.overlay p{font-size:clamp(10px,1.65dvh,12px);color:#c0c7d1;margin:0 0 14px;line-height:1.55;max-width:280px}
+.overlay p{font-size:clamp(10px,1.65dvh,12px);color:#c0c7d1;margin:0 0 14px;line-height:1.55;max-width:280px}.overlay .result-stats{font-size:clamp(12px,2dvh,15px);line-height:1.8;font-weight:800;color:#f8f9fb}
 .overlay button{height:42px;padding:0 25px;font-size:14px;background:#ffd43b;color:#111}
 .pause-cover{position:absolute;inset:3px;background:#090b10f2;z-index:8;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-weight:950;font-size:26px;border-radius:6px}.pause-actions{display:flex;flex-direction:column;gap:9px;width:min(82%,230px)}.pause-actions button{height:42px;font-size:14px}.pause-actions .resume{background:#ffd43b;color:#111}.pause-actions .return{background:#343b47;color:#fff}
 .pause-cover.show{display:flex}
@@ -96,6 +96,7 @@ button.utility{font-size:clamp(10px,1.8dvh,13px);height:clamp(28px,4.8dvh,36px)}
 <script>
 const W=8,H=14,TARGET="MAYAMA";
 let board=[],piece=null,queue=[],score=0,busy=false,started=false,paused=false,gameOver=false,timer=null;
+let mayamaCount=0,maxChain=0;
 
 function randLetter(){
  const n=Math.random();
@@ -164,11 +165,11 @@ function settleCells(){
 }
 function neighbors(x,y){return [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([a,b])=>a>=0&&a<W&&b>=0&&b<H)}
 function findMatches(){
- const found=new Set();
+ const found=new Set();let pathCount=0;
  for(let sy=0;sy<H;sy++)for(let sx=0;sx<W;sx++){
   if(!board[sy][sx]||board[sy][sx].l!=="M")continue;
   function dfs(x,y,i,path){
-   if(i===TARGET.length-1){path.forEach(([a,b])=>found.add(a+","+b));return}
+   if(i===TARGET.length-1){pathCount++;path.forEach(([a,b])=>found.add(a+","+b));return}
    for(const [nx,ny] of neighbors(x,y)){
     if(!board[ny][nx]||board[ny][nx].l!==TARGET[i+1]||path.some(([a,b])=>a===nx&&b===ny))continue;
     dfs(nx,ny,i+1,path.concat([[nx,ny]]))
@@ -176,13 +177,15 @@ function findMatches(){
   }
   dfs(sx,sy,0,[[sx,sy]])
  }
- return [...found]
+ return {cells:[...found],count:pathCount}
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function resolveMatches(){
  busy=true;let chain=0;
  while(true){
-  const matches=findMatches();if(!matches.length)break;
+  const result=findMatches();if(!result.cells.length)break;
+   const matches=result.cells;
+   chain++;mayamaCount+=result.count;maxChain=Math.max(maxChain,chain);
   chain++;document.getElementById("chain").textContent=chain>1?`${chain} CHAIN!`:"";
   render(matches);await wait(180);
   matches.forEach(key=>{const[x,y]=key.split(",").map(Number);board[y][x]=null});
@@ -203,7 +206,7 @@ function startTimer(){
 }
 function startGame(){
  board=emptyBoard();queue=[];refillQueue();piece=queue.shift();refillQueue();
- score=0;busy=false;paused=false;gameOver=false;started=true;
+ score=0;mayamaCount=0;maxChain=0;busy=false;paused=false;gameOver=false;started=true;
  gameStartAt=Date.now();pausedAt=0;pausedTotal=0;lastDropAt=gameStartAt;
  document.getElementById("startOverlay").classList.add("hidden");
  document.getElementById("pauseCover").classList.remove("show");
@@ -222,7 +225,7 @@ function endGame(){
  const overlay=document.getElementById("startOverlay");
  overlay.classList.remove("hidden");
  document.getElementById("overlayTitle").textContent="GAME OVER";
- document.getElementById("overlayText").innerHTML="SCORE："+score+"<br>TRY AGAIN";
+  document.getElementById("overlayText").innerHTML=`<span class="result-stats">SCORE: ${score}<br>MAYAMA CLEARS: ${mayamaCount}<br>MAX CHAIN: ${maxChain}</span><br><br>TRY AGAIN`;
  document.getElementById("startBtn").textContent="RESTART";
  render();
 }
